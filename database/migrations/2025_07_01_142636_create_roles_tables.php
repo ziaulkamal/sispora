@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('kontingens', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('province_id');
-            $table->uuid('regencies_id');
+        Schema::create('roles_tables', function (Blueprint $table) {
+            $table->id();
             $table->timestamps();
         });
     }
@@ -24,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kontingens');
+        Schema::dropIfExists('roles_tables');
     }
 };

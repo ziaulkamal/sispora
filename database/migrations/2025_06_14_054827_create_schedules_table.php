@@ -16,8 +16,8 @@ return new class extends Migration
             $table->date('date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->uuid('sports_sub_id');
-            $table->uuid('venue_id');
+            $table->uuid('sportsSubId');
+            $table->uuid('venuesId');
             $table->enum('status', ['active', 'inactive']);
             $table->uuid('user_id')->nullable();
             $table->timestamps();

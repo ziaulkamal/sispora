@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\AdditionalScheduleRegular;
+use App\Models\AdditionalScheduleSpecial;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Schedule extends Model
@@ -19,8 +21,8 @@ class Schedule extends Model
         'date',
         'start_time',
         'end_time',
-        'sports_sub_id',
-        'venue_id',
+        'sportsSubId',
+        'venuesId',
         'status',
         'user_id'
     ];
@@ -33,16 +35,23 @@ class Schedule extends Model
 
     public function sportsSub()
     {
-        return $this->belongsTo(SportsSub::class, 'sports_sub_id');
+        return $this->belongsTo(SportsSub::class, 'sportsSubId');
     }
 
     public function venue()
     {
-        return $this->belongsTo(Venue::class, 'venue_id');
+        return $this->belongsTo(Venue::class, 'venuesId');
     }
 
-    public function additionalSchedules()
+    public function additionalSchedulesSpecial()
     {
-        return $this->hasMany(AdditionalSchedule::class);
+        return $this->hasMany(AdditionalScheduleSpecial::class, 'schedulesId');
     }
+
+    public function additionalSchedulesRegular()
+    {
+        return $this->hasMany(AdditionalScheduleRegular::class, 'schedulesId');
+    }
+
+
 }

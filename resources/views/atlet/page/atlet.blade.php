@@ -1,5 +1,5 @@
 @extends('layouts::admin')
-
+{{-- @dd($people) --}}
 @section('content')
 <div class="page-body">
     <div class="container-fluid">
@@ -35,8 +35,6 @@
                                         <th>Kelamin</th>
                                         <th>Usia</th>
                                         <th>Nomor Kependudukan</th>
-                                        {{-- <th>Tinggi Badan</th> --}}
-                                        {{-- <th>Kontingen</th> --}}
                                         <th>Cabang Olahraga</th>
                                         <th>Terakhir Diubah</th>
                                         <th>Opsi</th>
@@ -44,29 +42,33 @@
                                 </thead>
                                     <tbody>
                                     @foreach ($people as $person)
+                                    {{-- @dd($person['sports']) --}}
                                         <tr id="person-row-{{ $person['id'] }}">
                                             <td>{{ $person['fullName'] }}</td>
                                             <td>{{ $person['gender'] }}</td>
                                             <td>{{ $person['age'] }}</td>
                                             <td>{{ $person['identityNumber'] }}</td>
-                                            {{-- <td>{{ $person['height'] }}</td> --}}
-                                            {{-- <td>{{ $person['kontingen'] }}</td> --}}
-                                            <td>
-                                                @if ($person['isAthlete'] == null)
-                                                    <a href="{{ route('form.atlet.edit', $person['id']) }}">
+                                            <td style="display: flex; flex-wrap: wrap; max-width: 250px; gap: 0.5rem;">
+                                                @if (empty($person['sports']))
+                                                    <a href="{{ route('view.atlet.detail', $person['id']) }}">
                                                         <span class="badge pill badge-danger" style="cursor: pointer;">
-                                                            Daftarkan Atlet
+                                                            Atur Cabor
                                                         </span>
                                                     </a>
                                                 @else
-                                                    {{ $person['isAthlete'] }}
+                                                    @foreach ($person['sports'] as $sport)
+                                                        {{-- @dd($sport['sportsSubId']['name']) --}}
+                                                        <a href="{{ route('view.atlet.detail', $person['id']) }}">
+                                                            <span class="badge badge-primary">#{{ $person['athletes'][0]['sportsSub']['sport']['name'] }} - {{  $sport }}</span>
+                                                        </a>
+                                                    @endforeach
                                                 @endif
                                             </td>
                                             <td>{{ $person['updated_at'] }}</td>
                                             <td>
                                                 <ul class="action d-flex gap-2 flex-wrap flex-md-nowrap">
                                                     <li class="">
-                                                        <a href="{{ route('form.atlet.edit', $person['id']) }}" title="Dokumen" class="btn btn-link p-0 m-0 text-success">
+                                                        <a href="{{ route('dokument.atlet', $person['id']) }}" title="Dokumen" class="btn btn-link p-0 m-0 text-success">
                                                             <i class="icon-file"></i>
                                                         </a>
                                                     </li>
@@ -76,7 +78,7 @@
                                                         </a>
                                                     </li>
                                                     <li class="">
-                                                        <form onsubmit="return deletePerson(event, '{{ route('people.destroy', $person['id']) }}', '{{ $person['id'] }}')">
+                                                        <form onsubmit="return deletePerson(event, '{{ route('web.people.destroy', $person['id']) }}', '{{ $person['id'] }}')">
                                                             @csrf
                                                             @method('DELETE')
                                                             <button type="submit" class="btn btn-link p-0 m-0 text-danger" title="Hapus">
@@ -103,38 +105,47 @@
 </div>
 @endsection
 
-@section('footerScript')
+@section('footScripts')
 <script>
 function deletePerson(event, url, id) {
     event.preventDefault();
 
-    if (!confirm('Yakin ingin menghapus data ini?')) return;
-
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'X-Requested-With': 'XMLHttpRequest',
-        },
-        body: new URLSearchParams({
-            '_method': 'DELETE'
-        })
-    })
-    .then(response => {
-        if (!response.ok) throw new Error('Gagal menghapus data.');
-        document.getElementById(`person-row-${id}`).remove();
-    })
-    .catch(error => {
-        alert('Terjadi kesalahan saat menghapus.');
-        console.error(error);
+    Swal.fire({
+        title: "Apakah Anda yakin?",
+        text: "Data yang dihapus tidak dapat dikembalikan!",
+        icon: "warning",
+        buttons: ["Batal", "Ya, hapus!"],
+        dangerMode: true,
+    }).then((willDelete) => {
+        if (willDelete) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    '_method': 'DELETE'
+                })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Gagal menghapus data.');
+                document.getElementById(`person-row-${id}`).remove();
+                Swal.fire("Berhasil!", "Data berhasil dihapus.", "success");
+            })
+            .catch(error => {
+                Swal.fire("Gagal!", "Terjadi kesalahan saat menghapus data.", "error");
+                console.error(error);
+            });
+        }
     });
 
     return false;
 }
 </script>
 
+
 @endsection
-@section('headScripts')
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-@endsection
+
 

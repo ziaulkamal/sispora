@@ -16,9 +16,7 @@ class SportsSub extends Model
 
     protected $fillable = [
         'id',
-        'sport_id',
-        'add_player_id',
-        'add_match_id',
+        'sportId',
         'name',
         'label',
         'image_id',
@@ -37,7 +35,7 @@ class SportsSub extends Model
     // RELATIONS
     public function sport()
     {
-        return $this->belongsTo(Sport::class, 'sport_id');
+        return $this->belongsTo(Sport::class, 'sportId', 'id');
     }
 
     public function additionalPlayer()
@@ -49,4 +47,6 @@ class SportsSub extends Model
     {
         return $this->belongsTo(AdditionalMatch::class, 'add_match_id');
     }
+
+
 }

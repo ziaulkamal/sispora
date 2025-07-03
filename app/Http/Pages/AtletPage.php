@@ -17,10 +17,14 @@ class AtletPage
                 'district',
                 'village',
                 'kontingen',
-                'document'
+                'document',
+                'probability'
             ])
                 ->whereNotNull('height')
                 ->whereNotNull('weight')
+                ->whereHas('probability', function ($query) {
+                    $query->where('label', 'ATLET');
+                })
                 ->get()
         )->resolve(); // ⬅⬅ Ini yang bikin jadi array
 
@@ -52,7 +56,7 @@ class AtletPage
             'district',
             'village',
             'kontingen',
-            'document'
+            'document',
         ])->findOrFail($id);
 
         return view('atlet.form.update_atlet', [
@@ -61,6 +65,28 @@ class AtletPage
             'selectedSection' => 'form',
             'form' => true,
             'person' => (new PersonResource($person))->forEdit(),
+        ]);
+    }
+
+    function atletDetail($id)
+    {
+        $person = Person::with([
+            'province',
+            'regencie',
+            'district',
+            'village',
+            'kontingen',
+            'document',
+            'athletes.sportsSub.sport'
+        ])->findOrFail($id);
+
+        return view('atlet.page.atlet_detail', [
+            'title' => '[BIODATA] ',
+            'section' => 'atlet',
+            'selectedSection' => 'table',
+            'table' => true,
+            'person' => (new PersonResource($person))->resolve(),
+            'kontingen' => $person->kontingen ?? '',
         ]);
     }
 }

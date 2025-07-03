@@ -21,7 +21,7 @@ class BridgingAuthService
     {
         // Cek token valid
         $existingToken = AccessToken::where('expires_at', '>', Carbon::now())->first();
-
+        // dd($existingToken);
         if ($existingToken) {
             return $existingToken->token;
         }
@@ -46,7 +46,7 @@ class BridgingAuthService
             $data = json_decode($response->getBody(), true);
 
             $token = $data['access_token'] ?? null;
-            $expiresIn = isset($data['expires_in']) ? (int) $data['expires_in'] : 1800;
+            $expiresIn = isset($data['expires_in']) ? (int) $data['expires_in'] : 1700;
 
             if (!$token) {
                 throw new \Exception('Access token not found in response.');

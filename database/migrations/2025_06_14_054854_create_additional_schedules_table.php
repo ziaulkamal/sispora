@@ -11,16 +11,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('additional_schedules', function (Blueprint $table) {
+        Schema::create('additional_schedules_special', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('schedule_id');
-            $table->enum('match', ['qualified', 'bye', 'BO4', 'grandfinal', 'final']);
-            $table->uuid('kontingen_id');
-            $table->enum('status', ['true', 'false']);
+            $table->uuid('schedulesId');
+            $table->enum('match', ['qualified', 'group', 'grandfinal']);
+            $table->string('group')->nullable();
+            $table->uuid('kontingenId');
+            $table->string('score')->nullable();
+            $table->enum('status', ['win', 'lose', 'default'])->default('default');
             $table->timestamps();
 
-            $table->foreign('schedule_id')->references('id')->on('schedules')->cascadeOnDelete();
-            $table->foreign('kontingen_id')->references('id')->on('kontingens')->cascadeOnDelete();
+            $table->foreign('schedulesId')->references('id')->on('schedules')->cascadeOnDelete();
+            $table->foreign('kontingenId')->references('id')->on('kontingens')->cascadeOnDelete();
+        });
+
+        Schema::create('additional_schedules_regular', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('schedulesId');
+            $table->uuid('kontingenId');
+            $table->enum('typeScore', ['minutes', 'weight', 'distance', 'default'])->default('default');
+            $table->string('score')->nullable();
+            $table->enum('status', ['win', 'lose', 'default'])->default('default');
+            $table->timestamps();
+
+            $table->foreign('schedulesId')->references('id')->on('schedules')->cascadeOnDelete();
+            $table->foreign('kontingenId')->references('id')->on('kontingens')->cascadeOnDelete();
         });
     }
 
@@ -29,6 +44,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('additional_schedules');
+        Schema::dropIfExists('additional_schedules_regular');
+        Schema::dropIfExists('additional_schedules_special');
     }
 };

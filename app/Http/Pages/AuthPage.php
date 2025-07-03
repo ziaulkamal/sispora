@@ -6,10 +6,11 @@ use Illuminate\Support\Facades\View;
 
 class AuthPage
 {
-    public function __invoke()
+    public function pageLogin()
     {
         return view('auth.index', [
-            // 'title' => 'Dashboard',
+            'title' => 'PORA XV AUTH',
+            'section' => 'auth',
             // Tambahkan data lain jika perlu
         ]);
     }

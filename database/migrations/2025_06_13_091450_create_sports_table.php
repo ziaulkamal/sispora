@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('description');
             $table->uuid('imageId')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->enum('specialCase', ['yes', 'no'])->default('no');
             $table->uuid('userId')->nullable();
             $table->timestamps();
         });

@@ -19,7 +19,9 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/scrollbar.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/prism.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/datatables.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/sweetalert2.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/datatable-extension.css">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/todo.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/vendors/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/style.css">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets') }}/css/responsive.css">

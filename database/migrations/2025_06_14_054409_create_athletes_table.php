@@ -14,12 +14,10 @@ return new class extends Migration
         Schema::create('athletes', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('peopleId');
-            $table->uuid('kontingenId');
             $table->uuid('sportsSubId');
             $table->timestamps();
 
             $table->foreign('peopleId')->references('id')->on('people')->onDelete('restrict');
-            $table->foreign('kontingenId')->references('id')->on('kontingens')->onDelete('restrict');
         });
     }
 

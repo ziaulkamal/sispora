@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\PersonResource;
-use App\Models\Person;
+use App\Models\Kontingen;
 
+use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,7 @@ class PersonController extends Controller
 {
     public function index()
     {
-        return PersonResource::collection(Person::all());
+        return PersonResource::collection(Person::with('probability')->get());
     }
 
     public function store(Request $request)
@@ -31,6 +32,7 @@ class PersonController extends Controller
             'districtId' => 'required|integer',
             'villageId' => 'required|integer',
             'kontingenId' => 'nullable|integer',
+            'probabilityId' => 'required|uuid|exists:probability,id',
             'phoneNumber' => ['required', 'regex:/^(628|08)[0-9]{7,11}$/'],
             'email' => 'nullable|email',
             'height' => 'nullable|numeric|min:80|max:300',
@@ -61,6 +63,7 @@ class PersonController extends Controller
             'villageId.required' => 'Desa wajib dipilih.',
             'height.numeric' => 'Tinggi badan harus berupa angka.',
             'height.min' => 'Tinggi badan minimal 80 cm.',
+            'probabilityId.required' => 'Bagian Peruntukan wajib dipilih salah satu.',
             'height.max' => 'Tinggi badan tidak boleh lebih dari 300 cm.',
             'weight.numeric' => 'Berat badan harus berupa angka.',
             'weight.min' => 'Berat badan minimal 40 kg.',
@@ -76,18 +79,28 @@ class PersonController extends Controller
             return response()->json([
                 'message' => 'Usia belum memenuhi syarat minimal 10 tahun.',
                 'errors' => [
-                    'birthdate' => ['Usia belum memenuhi syarat minimal 10 tahun Ke atas.']
+                    'birthdate' => ['Usia belum memenuhi syarat minimal 10 tahun ke atas.']
                 ]
             ], 422);
         }
 
-        // Hitung usia presisi (berdasarkan tahun, bulan, hari)
         $age = $birthdate->diffInYears($today);
         if ($birthdate->copy()->addYears($age)->isAfter($today)) {
             $age--;
         }
 
         $data['age'] = $age;
+        $idKontingens = (int) $data['kontingenId'];
+        $kontingen = Kontingen::where('regencies_id', $idKontingens)->first();
+        // Handle kontingenId jika null
+        if (empty($kontingen)) {
+            $kontingen = Kontingen::create([
+                'province_id' => 11,
+                'regencies_id' => $idKontingens,
+            ]);
+        }
+        $data['kontingenId'] = $kontingen->id;
+        // dd($kontingenId, $data);
         $person = Person::create($data);
 
         return new PersonResource($person);
@@ -111,10 +124,11 @@ class PersonController extends Controller
 
         return (new PersonResource($person))->forEdit();
     }
+
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         $person = Person::findOrFail($id);
-
         $data = $request->validate([
             'fullName' => 'required|string|max:40',
             'birthdate' => 'required|date|before:today',
@@ -133,6 +147,7 @@ class PersonController extends Controller
             'villageId' => 'required|integer',
             'kontingenId' => 'nullable|integer',
             'phoneNumber' => ['required', 'regex:/^(628|08)[0-9]{7,11}$/'],
+            // 'probabilityId' => 'required|uuid|exists:probability,id',
             'email' => 'nullable|email',
             'height' => 'nullable|numeric|min:80|max:300',
             'weight' => 'nullable|numeric|min:40|max:300',
@@ -162,6 +177,7 @@ class PersonController extends Controller
             'districtId.required' => 'Kecamatan wajib dipilih.',
             'villageId.required' => 'Desa wajib dipilih.',
             'height.numeric' => 'Tinggi badan harus berupa angka.',
+            'probabilityId.required' => 'Bagian Peruntukan wajib dipilih salah satu.',
             'height.min' => 'Tinggi badan minimal 80 cm.',
             'height.max' => 'Tinggi badan tidak boleh lebih dari 300 cm.',
             'weight.numeric' => 'Berat badan harus berupa angka.',
@@ -190,7 +206,16 @@ class PersonController extends Controller
         }
 
         $data['age'] = $age;
-
+        $idKontingens = (int) $data['kontingenId'];
+        $kontingen = Kontingen::where('regencies_id', $idKontingens)->first();
+        // Handle kontingenId jika null
+        if (empty($kontingen)) {
+            $kontingen = Kontingen::create([
+                'province_id' => 11,
+                'regencies_id' => $idKontingens,
+            ]);
+        }
+        $data['kontingenId'] = $kontingen->id;
         $person->update($data);
 
         return new PersonResource($person);

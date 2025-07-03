@@ -25,14 +25,25 @@ return new class extends Migration
             $table->unsignedBigInteger('regencieId');
             $table->unsignedBigInteger('districtId');
             $table->unsignedBigInteger('villageId');
-            $table->unsignedBigInteger('kontingenId')->nullable();
+            $table->uuid('kontingenId')->nullable();
             $table->string('phoneNumber');
             $table->string('email')->nullable();
             $table->string('height')->nullable();
             $table->string('weight')->nullable();
             $table->uuid('documentId')->nullable();
+            $table->uuid('probabilityId')->nullable();
             $table->uuid('userId')->nullable();
             $table->timestamps();
+
+            $table->foreign('probabilityId')
+                ->references('id')
+                ->on('probability')
+                ->onDelete('restrict');
+
+            $table->foreign('kontingenId')
+                ->references('id')
+                ->on('kontingens')
+                ->onDelete('restrict');
         });
     }
 

@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('additional_matches', function (Blueprint $table) {
-            $table->id();
+        Schema::create('probability', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('label');
             $table->timestamps();
         });
     }
@@ -22,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('additional_matches');
+        Schema::dropIfExists('probability');
     }
 };

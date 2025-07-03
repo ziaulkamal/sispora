@@ -13,6 +13,7 @@ class KontingenResource extends JsonResource
             'id' => $this->id,
             'province_id' => $this->province_id,
             'regencies_id' => $this->regencies_id,
+            'regency_name' => $this->regency ? $this->regency->name : null, // ini penting
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('additional_players', function (Blueprint $table) {
-            $table->id();
+        Schema::create('kontingens', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->unsignedBigInteger('province_id');
+            $table->unsignedBigInteger('regencies_id');
             $table->timestamps();
+
         });
     }
 
@@ -22,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('additional_players');
+        Schema::dropIfExists('kontingens');
     }
 };

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SportsSub;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ class Sport extends Model
         'description',
         'imageId',
         'status',
+        'specialCase',
         'userId',
     ];
 
@@ -29,5 +31,10 @@ class Sport extends Model
         static::creating(function ($model) {
             $model->id = (string) Str::uuid();
         });
+    }
+
+    public function subSports()
+    {
+        return $this->hasMany(SportsSub::class, 'sportId');
     }
 }

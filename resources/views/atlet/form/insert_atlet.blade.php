@@ -39,7 +39,7 @@
                                     <label class="form-label" for="nomor_induk_kependudukan">Nomor Induk
                                         Kependudukan</label>
                                     <input type="text" class="form-control onlynumber maxchar-16" id="nomor_induk_kependudukan"
-                                        name="identityNumber" data-url="{{ route('fetch.people', ['nik' => '__NIK__']) }}" required>
+                                        name="identityNumber" data-url="{{ route('web.people.fetch', ['nik' => '__NIK__']) }}" required>
                                     <div class="invalid-feedback">NIK wajib diisi dan maksimal 16 digit.</div>
                                 </div>
                                 <div class="col-md-4">
@@ -160,6 +160,13 @@
                                         <div class="invalid-feedback">Tinggi Badan wajib diisi.</div>
                                     </div>
                                 </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" for="probability">Peruntukan Jenis</label>
+                                    <div class="input-group">
+                                        <select id="peruntukan" class="form-select" name="probabilityId"></select>
+                                        <div class="invalid-feedback">Harap Pilih peruntukan jenis.</div>
+                                    </div>
+                                </div>
                             </div>
                             @endif
 
@@ -190,6 +197,8 @@
 @section('load-mendagri-js')
 <script>
     $(document).ready(function () {
+        const getProvince = `{{ route('web.mendagri.provinces') }}`;
+        const getKontingen = `{{ route('web.mendagri.kontingens') }}`;
         function resetSelect($el) {
             $el.html('<option selected disabled value="">--Pilih--</option>').prop('disabled', true);
         }
@@ -204,36 +213,44 @@
             });
         }
 
-        populateSelect('/api/provinces', $('#provinsi'));
-        populateSelect('/api/kontingens', $('#kontingen'));
+        populateSelect(getProvince, $('#provinsi'));
+        populateSelect(getKontingen, $('#kontingen'));
 
         $('#provinsi').on('change', function () {
             let provId = $(this).val();
+            let regenciesRoute = `{{ route('web.mendagri.regencies', ['provinceId' => '__ID__']) }}`;
+            regenciesRoute = regenciesRoute.replace('__ID__', provId);
             resetSelect($('#kabupaten_kota'));
             resetSelect($('#kecamatan'));
             resetSelect($('#desa'));
-            if (provId) populateSelect(`/api/regencies/${provId}`, $('#kabupaten_kota'));
+            if (provId) populateSelect(regenciesRoute, $('#kabupaten_kota'));
         });
 
         $('#kabupaten_kota').on('change', function () {
             let kabId = $(this).val();
+            let districtsRoute = `{{ route('web.mendagri.districts', ['regencyId' => '__ID__']) }}`;
+            districtsRoute = districtsRoute.replace('__ID__', kabId);
             resetSelect($('#kecamatan'));
             resetSelect($('#desa'));
-            if (kabId) populateSelect(`/api/districts/${kabId}`, $('#kecamatan'));
+            if (kabId) populateSelect(districtsRoute, $('#kecamatan'));
         });
 
         $('#kecamatan').on('change', function () {
             let kecId = $(this).val();
+            let villagesRoute = `{{ route('web.mendagri.villages', ['districtId' => '__ID__']) }}`;
+            villagesRoute = villagesRoute.replace('__ID__', kecId);
             resetSelect($('#desa'));
-            if (kecId) populateSelect(`/api/villages/${kecId}`, $('#desa'));
+            if (kecId) populateSelect(villagesRoute, $('#desa'));
         });
     });
 </script>
 @endsection
 
 @section('footScripts')
+<script src="{{ asset('assets') }}/js/custom-addons.js"></script>
 <script>
 $(document).ready(function () {
+    loadPeruntukanOptions();
     function resetSelect($el) {
         $el.html('<option selected disabled value="">--Pilih--</option>').prop('disabled', true);
     }
@@ -255,28 +272,37 @@ $(document).ready(function () {
     }
 
     function triggerAutoFetch() {
+        const getProvince = `{{ route('web.mendagri.provinces') }}`;
+        let regenciesRoute = `{{ route('web.mendagri.regencies', ['provinceId' => '__ID__']) }}`;
+        let districtsRoute = `{{ route('web.mendagri.districts', ['regencyId' => '__ID__']) }}`;
+        let villagesRoute = `{{ route('web.mendagri.villages', ['districtId' => '__ID__']) }}`;
         let name = $('#nama_lengkap').val().trim();
         let nik = $('#nomor_induk_kependudukan').val().trim();
+        let routeAttribute = `{{ route('web.people.fetch.attribute') }}`;
 
         if (name && nik.length === 16 && /^\d+$/.test(nik)) {
             $.ajax({
-                url: `/api/fetch/people_attribute?name=${encodeURIComponent(name)}&nik=${nik}`,
+                url: `${routeAttribute}?name=${encodeURIComponent(name)}&nik=${nik}`,
                 method: 'GET',
                 dataType: 'json',
                 success: function (data) {
                     if (data.name) {
+                        regenciesRoute = regenciesRoute.replace('__ID__', data.province);
+                        districtsRoute = districtsRoute.replace('__ID__', data.regency);
+                        villagesRoute = villagesRoute.replace('__ID__', data.district);
                         $('#jenis_kelamin').val(data.gender);
                         let [mm, dd, yyyy] = data.birthDate.split('/');
                         $('#tanggal_lahir').val(`${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`);
                         $('#alamat').val(data.line);
 
-                        populateSelect('/api/provinces', $('#provinsi'), data.province);
-                        populateSelect(`/api/regencies/${data.province}`, $('#kabupaten_kota'), data.regency);
-                        populateSelect(`/api/districts/${data.regency}`, $('#kecamatan'), data.district);
-                        populateSelect(`/api/villages/${data.district}`, $('#desa'), data.village);
+                        populateSelect(getProvince, $('#provinsi'), data.province);
+                        populateSelect(regenciesRoute, $('#kabupaten_kota'), data.regency);
+                        populateSelect(districtsRoute, $('#kecamatan'), data.district);
+                        populateSelect(villagesRoute, $('#desa'), data.village);
                     }
                 },
                 error: function (xhr) {
+
                     console.warn('Gagal fetch data atribut:', xhr.responseJSON || xhr.statusText);
                 }
             });
@@ -302,6 +328,7 @@ $(document).ready(function () {
                     $('#nama_lengkap').attr('placeholder', data.name || 'Nama tidak ditemukan');
                 },
                 error: function () {
+
                     $('#nama_lengkap').attr('placeholder', 'Gagal mengambil data');
                 }
             });
@@ -327,14 +354,27 @@ $(document).ready(function () {
             }
 
             const formData = new FormData(form);
+            // console.log(formData);
 
             $.ajax({
-                type: 'POST',
-                url: '{{ route("people.store") }}', // Ganti sesuai rute controller Anda
+                url: '{{ route("web.people.store") }}', // Ganti sesuai rute controller Anda
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message ?? 'Data berhasil disimpan.',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        location.reload(); // Refresh halaman
+                    });
                     $('#alert-container').html(`
                         <div class="alert alert-success" role="alert">
                             <h4 class="alert-heading">Berhasil!</h4>
@@ -369,7 +409,17 @@ $(document).ready(function () {
                                 <p class="mb-0">Silakan perbaiki dan coba lagi.</p>
                             </div>
                         `);
+                        $('html, body').animate({
+                            scrollTop: $('#alert-container').offset().top - 100 // sedikit offset dari atas
+                        }, 500);
                     } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal !',
+                            text: 'Server mengalami masalah. Silakan coba beberapa saat lagi.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
                         $('#alert-container').html(`
                             <div class="alert alert-danger" role="alert">
                                 <h4 class="alert-heading">Terjadi Kesalahan!</h4>

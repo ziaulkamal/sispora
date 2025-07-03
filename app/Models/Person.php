@@ -7,6 +7,8 @@ use App\Models\Kemendagri\Districts;
 use App\Models\Kemendagri\Provinces;
 use App\Models\Kemendagri\Regencies;
 use App\Models\Kemendagri\Villages;
+use App\Models\Kontingen;
+use App\Models\Probability;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -33,6 +35,7 @@ class Person extends Model
         'districtId',
         'villageId',
         'kontingenId',
+        'probabilityId',
         'phoneNumber',
         'email',
         'height',
@@ -47,6 +50,11 @@ class Person extends Model
         static::creating(function ($model) {
             $model->id = (string) Str::uuid();
         });
+    }
+
+    public function athletes()
+    {
+        return $this->hasMany(Athlete::class, 'peopleId', 'id');
     }
 
     public function document()
@@ -72,7 +80,17 @@ class Person extends Model
     }
     public function kontingen()
     {
-        return $this->belongsTo(Regencies::class, 'kontingenId');
+        return $this->belongsTo(Kontingen::class, 'kontingenId');
+    }
+
+    public function probability()
+    {
+        return $this->belongsTo(Probability::class, 'probabilityId');
+    }
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'people_id');
     }
 }
 

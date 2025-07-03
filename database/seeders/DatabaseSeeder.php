@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\SportSeeder;
+use Database\Seeders\UserSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,6 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             MendagriSeeder::class,
+            SportSeeder::class,
+            ProbabilitySeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

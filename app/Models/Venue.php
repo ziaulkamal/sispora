@@ -32,4 +32,10 @@ class Venue extends Model
             $model->id = $model->id ?? Str::uuid()->toString();
         });
     }
+
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'venuesId');
+    }
+
 }

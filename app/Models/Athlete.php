@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Kontingen;
 use App\Models\Person;
+use App\Models\SportsSub;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -18,7 +19,6 @@ class Athlete extends Model
 
     protected $fillable = [
         'peopleId',
-        'kontingenId',
         'sportsSubId',
     ];
 
@@ -35,8 +35,9 @@ class Athlete extends Model
         return $this->belongsTo(Person::class, 'peopleId');
     }
 
-    public function kontingen()
+    public function sportsSub()
     {
-        return $this->belongsTo(Kontingen::class, 'kontingenId');
+        return $this->belongsTo(SportsSub::class, 'sportsSubId', 'id');
     }
+
 }

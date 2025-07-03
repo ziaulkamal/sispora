@@ -1,5 +1,5 @@
 @extends('layouts::admin')
-{{-- @dd($person) --}}
+{{-- @dd($person->kontingen->regencies_id) --}}
 @section('content')
 <div class="page-body">
     <div class="container-fluid">
@@ -39,7 +39,7 @@
                                     <label class="form-label" for="nomor_induk_kependudukan">Nomor Induk
                                         Kependudukan</label>
                                     <input type="text" class="form-control onlynumber maxchar-16" id="nomor_induk_kependudukan" value="{{ $person['identityNumber'] ?? '' }}"
-                                        name="identityNumber" data-url="{{ route('fetch.people', ['nik' => '__NIK__']) }}" required readonly>
+                                        name="identityNumber" data-url="{{ route('web.people.fetch', ['nik' => '__NIK__']) }}" required readonly>
                                     <div class="invalid-feedback">NIK wajib diisi dan maksimal 16 digit.</div>
                                 </div>
                                 <div class="col-md-4">
@@ -191,6 +191,8 @@
 @section('load-mendagri-js')
 <script>
 $(document).ready(function () {
+
+
     function resetSelect($el) {
         $el.html('<option selected disabled value="">--Pilih--</option>').prop('disabled', true);
     }
@@ -212,44 +214,64 @@ $(document).ready(function () {
     let regency  = `{{ $person['regencieId'] ?? '' }}`;
     let district = `{{ $person['districtId'] ?? '' }}`;
     let village  = `{{ $person['villageId'] ?? '' }}`;
-    let contingent  = `{{ $person['kontingenId'] ?? '' }}`;
+
+    let contingent  = `{{ $person->kontingen->regencies_id ?? '' }}`;
+    console.log(`Kontingen: ${contingent}`);
+
+    const getProvince = `{{ route('web.mendagri.provinces') }}`;
+    const getKontingen = `{{ route('web.mendagri.kontingens') }}`;
+    let regenciesRoute = `{{ route('web.mendagri.regencies', ['provinceId' => '__ID__']) }}`;
+    regenciesRoute = regenciesRoute.replace('__ID__', province);
+    let districtsRoute = `{{ route('web.mendagri.districts', ['regencyId' => '__ID__']) }}`;
+    districtsRoute = districtsRoute.replace('__ID__', regency);
+    let villagesRoute = `{{ route('web.mendagri.villages', ['districtId' => '__ID__']) }}`;
+    villagesRoute = villagesRoute.replace('__ID__', district);
+    // console.log(villagesRoute);
 
     // Load provinsi sampai desa jika ada data
     if (province) {
-        populateSelect('/api/provinces', $('#provinsi'), province, function () {
-            populateSelect(`/api/regencies/${province}`, $('#kabupaten_kota'), regency, function () {
-                populateSelect(`/api/districts/${regency}`, $('#kecamatan'), district, function () {
-                    populateSelect(`/api/villages/${district}`, $('#desa'), village);
+        populateSelect(getProvince, $('#provinsi'), province, function () {
+            populateSelect(regenciesRoute, $('#kabupaten_kota'), regency, function () {
+                populateSelect(districtsRoute, $('#kecamatan'), district, function () {
+                    populateSelect(villagesRoute, $('#desa'), village);
                 });
             });
         });
     } else {
-        populateSelect('/api/provinces', $('#provinsi'));
+        populateSelect(getProvince, $('#provinsi'));
     }
 
     // Load kontingen jika ada
-    populateSelect('/api/kontingens', $('#kontingen'), contingent);
+    populateSelect(getKontingen, $('#kontingen'), contingent);
 
     // Event chaining manual
     $('#provinsi').on('change', function () {
+
         let provId = $(this).val();
+        let regenciesRoute = `{{ route('web.mendagri.regencies', ['provinceId' => '__ID__']) }}`;
+        regenciesRoute = regenciesRoute.replace('__ID__', provId);
         resetSelect($('#kabupaten_kota'));
         resetSelect($('#kecamatan'));
         resetSelect($('#desa'));
-        if (provId) populateSelect(`/api/regencies/${provId}`, $('#kabupaten_kota'));
+        if (provId) populateSelect(regenciesRoute, $('#kabupaten_kota'));
     });
 
     $('#kabupaten_kota').on('change', function () {
+
         let kabId = $(this).val();
+        let districtsRoute = `{{ route('web.mendagri.districts', ['regencyId' => '__ID__']) }}`;
+        districtsRoute = districtsRoute.replace('__ID__', kabId);
         resetSelect($('#kecamatan'));
         resetSelect($('#desa'));
-        if (kabId) populateSelect(`/api/districts/${kabId}`, $('#kecamatan'));
+        if (kabId) populateSelect(districtsRoute, $('#kecamatan'));
     });
 
     $('#kecamatan').on('change', function () {
         let kecId = $(this).val();
+        let villagesRoute = `{{ route('web.mendagri.villages', ['districtId' => '__ID__']) }}`;
+        villagesRoute = villagesRoute.replace('__ID__', kecId);
         resetSelect($('#desa'));
-        if (kecId) populateSelect(`/api/villages/${kecId}`, $('#desa'));
+        if (kecId) populateSelect(villagesRoute, $('#desa'));
     });
 });
 </script>
@@ -281,28 +303,37 @@ $(document).ready(function () {
     }
 
     function triggerAutoFetch() {
+        const getProvince = `{{ route('web.mendagri.provinces') }}`;
+        let regenciesRoute = `{{ route('web.mendagri.regencies', ['provinceId' => '__ID__']) }}`;
+        let districtsRoute = `{{ route('web.mendagri.districts', ['regencyId' => '__ID__']) }}`;
+        let villagesRoute = `{{ route('web.mendagri.villages', ['districtId' => '__ID__']) }}`;
         let name = $('#nama_lengkap').val().trim();
         let nik = $('#nomor_induk_kependudukan').val().trim();
+        let routeAttribute = `{{ route('web.people.fetch.attribute') }}`;
 
         if (name && nik.length === 16 && /^\d+$/.test(nik)) {
             $.ajax({
-                url: `/api/fetch/people_attribute?name=${encodeURIComponent(name)}&nik=${nik}`,
+                url: `${routeAttribute}?name=${encodeURIComponent(name)}&nik=${nik}`,
                 method: 'GET',
                 dataType: 'json',
                 success: function (data) {
                     if (data.name) {
+                        regenciesRoute = regenciesRoute.replace('__ID__', data.province);
+                        districtsRoute = districtsRoute.replace('__ID__', data.regency);
+                        villagesRoute = villagesRoute.replace('__ID__', data.district);
                         $('#jenis_kelamin').val(data.gender);
                         let [mm, dd, yyyy] = data.birthDate.split('/');
                         $('#tanggal_lahir').val(`${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`);
                         $('#alamat').val(data.line);
 
-                        populateSelect('/api/provinces', $('#provinsi'), data.province);
-                        populateSelect(`/api/regencies/${data.province}`, $('#kabupaten_kota'), data.regency);
-                        populateSelect(`/api/districts/${data.regency}`, $('#kecamatan'), data.district);
-                        populateSelect(`/api/villages/${data.district}`, $('#desa'), data.village);
+                        populateSelect(getProvince, $('#provinsi'), data.province);
+                        populateSelect(regenciesRoute, $('#kabupaten_kota'), data.regency);
+                        populateSelect(districtsRoute, $('#kecamatan'), data.district);
+                        populateSelect(villagesRoute, $('#desa'), data.village);
                     }
                 },
                 error: function (xhr) {
+
                     console.warn('Gagal fetch data atribut:', xhr.responseJSON || xhr.statusText);
                 }
             });
@@ -337,16 +368,25 @@ $(document).ready(function () {
     });
 
     // ✅ Inisialisasi Wilayah Berdasarkan Data Blade
+    console.log(villagesRoute);
     let province = `{{ $person['province'] ?? '' }}`;
     let regency  = `{{ $person['regency'] ?? '' }}`;
     let district = `{{ $person['district'] ?? '' }}`;
     let village  = `{{ $person['village'] ?? '' }}`;
+    const getProvince = `{{ route('web.mendagri.provinces') }}`;
+    const getKontingen = `{{ route('web.mendagri.kontingens') }}`;
+    let regenciesRoute = `{{ route('web.mendagri.regencies', ['provinceId' => '__ID__']) }}`;
+    regenciesRoute = regenciesRoute.replace('__ID__', province);
+    let districtsRoute = `{{ route('web.mendagri.districts', ['regencyId' => '__ID__']) }}`;
+    districtsRoute = districtsRoute.replace('__ID__', regency);
+    let villagesRoute = `{{ route('web.mendagri.villages', ['districtId' => '__ID__']) }}`;
+    villagesRoute = villagesRoute.replace('__ID__', village);
 
     if (province && regency && district && village) {
-        populateSelect('/api/provinces', $('#provinsi'), province);
-        populateSelect(`/api/regencies/${province}`, $('#kabupaten_kota'), regency);
-        populateSelect(`/api/districts/${regency}`, $('#kecamatan'), district);
-        populateSelect(`/api/villages/${district}`, $('#desa'), village);
+        populateSelect(getProvince, $('#provinsi'), province);
+        populateSelect(regenciesRoute, $('#kabupaten_kota'), regency);
+        populateSelect(districtsRoute $('#kecamatan'), district);
+        populateSelect(villagesRoute, $('#desa'), village);
     }
 });
 </script>
@@ -356,7 +396,8 @@ $(document).ready(function () {
         $('#form-person').on('submit', function (e) {
             e.preventDefault();
             $('#alert-container').html('');
-
+            let routeUpdate = `{{ route("web.people.patch", ['id' => ':id']) }}`;
+            routeUpdate = routeUpdate.replace(':id', "{{ $person->id }}");
             const form = $(this)[0];
             if (!form.checkValidity()) {
                 form.classList.add('was-validated');
@@ -364,15 +405,19 @@ $(document).ready(function () {
             }
 
             const formData = new FormData(form);
-            formData.append('_method', 'PUT'); // Penting untuk edit
+            // formData.append('_method', 'PUT'); // Penting untuk edit
 
             $.ajax({
-                type: 'POST', // tetap POST karena override pakai _method
-                url: '{{ route("people.update", $person->id) }}', // ganti sesuai ID
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                url: routeUpdate, // ganti sesuai ID
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function (response) {
+
                     $('#alert-container').html(`
                         <div class="alert alert-success" role="alert">
                             <h4 class="alert-heading">Berhasil!</h4>
@@ -381,6 +426,16 @@ $(document).ready(function () {
                             <p class="mb-0">Perubahan telah disimpan.</p>
                         </div>
                     `);
+                    $('html, body').animate({
+                            scrollTop: $('#alert-container').offset().top - 100 // sedikit offset dari atas
+                        }, 500);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: response.message ?? 'Data berhasil disimpan.',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
                     // Form tidak direset supaya tetap tampil hasil edit-nya
                 },
                 error: function (xhr) {
@@ -403,6 +458,9 @@ $(document).ready(function () {
                                 <p class="mb-0">Silakan perbaiki dan coba lagi.</p>
                             </div>
                         `);
+                        $('html, body').animate({
+                            scrollTop: $('#alert-container').offset().top - 100 // sedikit offset dari atas
+                        }, 500);
                     } else {
                         $('#alert-container').html(`
                             <div class="alert alert-danger" role="alert">
@@ -412,6 +470,16 @@ $(document).ready(function () {
                                 <p class="mb-0">${xhr.responseJSON?.message ?? 'Unknown error.'}</p>
                             </div>
                         `);
+                        $('html, body').animate({
+                            scrollTop: $('#alert-container').offset().top - 100 // sedikit offset dari atas
+                        }, 500);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal !',
+                            text: 'Server mengalami masalah. Silakan coba beberapa saat lagi.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
                     }
                 }
             });

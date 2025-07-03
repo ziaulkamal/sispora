@@ -8,16 +8,23 @@ use App\Http\Resources\KontingenResource;
 
 class KontingenController extends Controller
 {
+    public function kontingenRegister() {
+        $kontingens = Kontingen::with('regency')->get();
+        return KontingenResource::collection($kontingens);
+    }
+
     public function index()
     {
-        return KontingenResource::collection(Kontingen::with('athletes')->get());
+        $kontingens = Kontingen::with('regency')->get();
+        return KontingenResource::collection($kontingens);
     }
+
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'province_id' => 'required|uuid',
-            'regencies_id' => 'required|uuid',
+            'province_id' => 'required|integer',
+            'regencies_id' => 'required|integer',
         ]);
 
         $kontingen = Kontingen::create($data);

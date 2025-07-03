@@ -17,9 +17,18 @@ class AthleteController extends Controller
     {
         $data = $request->validate([
             'peopleId' => 'required|uuid|exists:people,id',
-            'kontingenId' => 'required|uuid|exists:kontingens,id',
             'sportsSubId' => 'required|uuid',
         ]);
+
+        $exists = Athlete::where('peopleId', $data['peopleId'])
+            ->where('sportsSubId', $data['sportsSubId'])
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Atlet ini sudah terdaftar di kelas cabang olahraga tersebut.'
+            ], 422);
+        }
 
         $athlete = Athlete::create($data);
         return new AthleteResource($athlete);

@@ -11,6 +11,9 @@
     <script src="{{ asset('assets') }}/js/custom-card/custom-card.js"></script>
     <script src="{{ asset('assets') }}/js/form-validation-custom.js"></script>
     <script src="{{ asset('assets') }}/js/tooltip-init.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- <script src="{{ asset('assets') }}/js/sweet-alert/sweetalert.min.js"></script> --}}
+    {{-- <script src="{{ asset('assets') }}/js/sweet-alert/app.js"></script> --}}
     @isset($table)
     <script src="{{ asset('assets') }}/js/datatable/datatables/jquery.dataTables.min.js"></script>
     <script src="{{ asset('assets') }}/js/datatable/datatable-extension/dataTables.buttons.min.js"></script>
@@ -34,5 +37,10 @@
     <script src="{{ asset('assets') }}/js/datatable/datatable-extension/custom.js"></script>
     @endisset
     <script src="{{ asset('assets') }}/js/script.js"></script>
-    <script src="{{ asset('assets') }}/js/input-file.js"></script>
+    @if (!isset($section) || $section != 'dokumen')
+
+        <script src="{{ asset('assets') }}/js/input-file.js"></script>
+
+    @endif
     <script src="{{ asset('assets') }}/js/disable-autocomplete.js"></script>
+    <script src="{{ asset('assets') }}/js/custom-map.js"></script>

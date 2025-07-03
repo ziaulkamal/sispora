@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Athlete;
+use App\Models\Kemendagri\Regencies;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -28,8 +29,14 @@ class Kontingen extends Model
         });
     }
 
-    public function athletes()
+
+    /**
+     * Get the user that owns the Kontingen
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function regency()
     {
-        return $this->hasMany(Athlete::class, 'kontingenId');
+        return $this->belongsTo(Regencies::class, 'regencies_id', 'id');
     }
 }

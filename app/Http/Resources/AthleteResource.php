@@ -11,11 +11,10 @@ class AthleteResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'peopleId' => $this->peopleId,
             'sportsSubId' => $this->sportsSubId,
-            'person' => new PersonResource($this->whenLoaded('person')),
-            'kontingen' => new KontingenResource($this->whenLoaded('kontingen')),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'sportsSubName' => $this->sportsSub?->name,
+            'sportName' => $this->sportsSub?->sport?->name,
         ];
     }
 }

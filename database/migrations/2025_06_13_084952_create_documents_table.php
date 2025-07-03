@@ -14,16 +14,40 @@ return new class extends Migration
         Schema::create('documents', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('peopleId');
+
+            // Image Profile
             $table->string('imageProfile')->nullable();
+            $table->enum('imageProfile_status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('imageProfile_note')->nullable();
+
+            // Identity
+            $table->string('identityProfile')->nullable();
+            $table->enum('identityProfile_status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('identityProfile_note')->nullable();
+
+            // Family Card
             $table->string('familyProfile')->nullable();
-            $table->string('selfieProfile')->nullable();
-            $table->string('path')->nullable();
-            $table->uuid('imageId')->nullable();
-            $table->json('extra')->nullable();
+            $table->enum('familyProfile_status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('familyProfile_note')->nullable();
+
+            // Certificate
+            $table->string('personalCertificate')->nullable();
+            $table->enum('personalCertificate_status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('personalCertificate_note')->nullable();
+
+            // Last Diploma
+            $table->string('lastDiploma')->nullable();
+            $table->enum('lastDiploma_status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('lastDiploma_note')->nullable();
+
+            // Supporting PDF
+            $table->string('supportPdf')->nullable();
+            $table->enum('supportPdf_status', ['pending', 'accepted', 'rejected'])->default('pending');
+            $table->string('supportPdf_note')->nullable();
+
             $table->uuid('userId')->nullable();
             $table->timestamps();
 
-            // Foreign key constraint ke people.documentId
             $table->foreign('peopleId')->references('id')->on('people')->onDelete('restrict');
         });
     }

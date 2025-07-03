@@ -12,8 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sports_subs', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->uuid('sportId');
+            $table->string('name');
+            $table->string('label')->nullable();
             $table->timestamps();
+            $table->uuid('userId')->nullable();
+
+            // Foreign key constraint
+            $table->foreign('sportId')
+                ->references('id')
+                ->on('sports')
+                ->onDelete('cascade'); // Opsional: Hapus sub saat sport dihapus
         });
     }
 

@@ -33,16 +33,17 @@
                         <ul class="sidebar-submenu">
                             <li><a href="{{ ('#') }}">Daftarkan</a></li>
                             <li><a href="{{ ('#') }}">Wasit</a></li>
-                            <li><a href="{{ ('#') }}">Jadwal</a></li>
+                            <li><a href="{{ route('view.schedule.index') }}">Jadwal</a></li>
                             <li><a href="{{ ('#') }}">Laporan</a></li>
                         </ul>
                     </li>
-                    <li class="sidebar-list"></i><a class="sidebar-link sidebar-title link-nav" href="support-ticket.html"><i data-feather="map"> </i><span>Data Venue</span></a></li>
+                    <li class="sidebar-list"></i><a class="sidebar-link sidebar-title link-nav" href="{{ route('view.venue.index') }}"><i data-feather="map"> </i><span>Data Venue</span></a></li>
                     <li class="sidebar-list"></i><a class="sidebar-link sidebar-title" href="javascript:void(0)"><i data-feather="archive"></i><span class="">Data Unit Lokal</span></a>
                         <ul class="sidebar-submenu">
                             <li><a href="{{ ('#') }}">Transportasi</a></li>
                             <li><a href="{{ ('#') }}">Penginapan</a></li>
                             <li><a href="{{ ('#') }}">Konsumsi</a></li>
+                            <li><a href="{{ route('view.sport.index') }}">Cabang Olahraga</a></li>
                         </ul>
                     </li>
                     <li class="sidebar-list"></i><a class="sidebar-link sidebar-title" href="javascript:void(0)"><i data-feather="users"></i><span class="">Data Admin</span></a>

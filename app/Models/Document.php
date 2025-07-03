@@ -18,23 +18,42 @@ class Document extends Model
     protected $fillable = [
         'peopleId',
         'imageProfile',
+        'imageProfile_status',
+        'imageProfile_note',
+        'identityProfile',
+        'identityProfile_status',
+        'identityProfile_note',
         'familyProfile',
-        'selfieProfile',
-        'path',
-        'imageId',
-        'extra',
+        'familyProfile_status',
+        'familyProfile_note',
+        'personalCertificate',
+        'personalCertificate_status',
+        'personalCertificate_note',
+        'lastDiploma',
+        'lastDiploma_status',
+        'lastDiploma_note',
+        'supportPdf',
+        'supportPdf_status',
+        'supportPdf_note',
         'userId',
     ];
 
     protected $casts = [
-        'extra' => 'array',
+        'imageProfile_note' => 'string',
+        'identityProfile_note' => 'string',
+        'familyProfile_note' => 'string',
+        'personalCertificate_note' => 'string',
+        'lastDiploma_note' => 'string',
+        'supportPdf_note' => 'string',
     ];
 
     protected static function boot()
     {
         parent::boot();
         static::creating(function ($model) {
-            $model->id = (string) Str::uuid();
+            if (empty($model->id)) {
+                $model->id = (string) Str::uuid();
+            }
         });
     }
 
