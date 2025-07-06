@@ -32,7 +32,7 @@
         <div class="container">
           <div class="col-md-8 offset-md-2">
             <h2>ERROR 404</h2>
-            <p class="sub-content">Halaman yang anda cari tidak ditemukan</p><a class="btn btn-primary" href="{{ route('dashboard') }}">Kembali</a>
+            <p class="sub-content">Halaman yang anda cari tidak ditemukan</p><a class="btn btn-primary" href="{{ url()->previous() }}">Kembali</a>
           </div>
         </div>
       </div>

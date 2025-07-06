@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,11 +14,12 @@ class AdditionalScheduleRegularResource extends JsonResource
             'id' => $this->id,
             'schedulesId' => $this->schedulesId,
             'kontingenId' => $this->kontingenId,
+            'kontingenName' => $this->kontingen?->regency?->name ?? '-',
             'typeScore' => $this->typeScore,
             'score' => $this->score,
             'status' => $this->status,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'created_at' => Carbon::parse($this->created_at)->translatedFormat('d F Y H:i') . ' WIB',
+            'updated_at' => Carbon::parse($this->updated_at)->translatedFormat('d F Y H:i') . ' WIB',
         ];
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('additional_schedules_special', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('schedulesId');
-            $table->enum('match', ['qualified', 'group', 'grandfinal']);
+            $table->enum('match', ['qualified', 'group', 'grandfinal'])->default('qualified');
             $table->string('group')->nullable();
             $table->uuid('kontingenId');
             $table->string('score')->nullable();

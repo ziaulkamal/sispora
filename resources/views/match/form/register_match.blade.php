@@ -11,7 +11,7 @@
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url('dashboard') }}"><i data-feather="home"></i></a>
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i data-feather="home"></i></a>
                         </li>
                         <li class="breadcrumb-item">{{ ucwords($section) ?? null }}</li>
                         <li class="breadcrumb-item active"> {{ ucwords($selectedSection) ?? null }}</li>
@@ -302,16 +302,19 @@ $(function() {
             success: function(response) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'Berhasil',
-                    text: 'Data berhasil disimpan!'
+                    title: 'Berhasil!',
+                    text: 'Data berhasil disimpan.',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    location.href = "{{ route('view.schedule.index') }}"; // Refresh halaman
                 });
 
-                resetSelectedKontingen();
-                $('#sportForm')[0].reset();
-                $('#sportForm').removeClass('was-validated');
-                $('#kelas').prop('disabled', true);
+
             },
             error: function(xhr) {
+                console.log(xhr.message);
+
                 if(xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     let message = Object.keys(errors).map(k => `${k}: ${errors[k].join(', ')}`).join('<br>');
@@ -321,10 +324,18 @@ $(function() {
                         html: message
                     });
                 } else if(xhr.status === 423) {
+                    let response = JSON.parse(xhr.responseText); // ambil data JSON
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
-                        text: 'Kondisi untuk pertandingan Bola harus ada 2 kontingen yang dipertandingkan dan harus Head To Head.'
+                        text: response.message // ambil pesan dari controller
+                    });
+                } else if(xhr.status === 424) {
+                    let response = JSON.parse(xhr.responseText); // ambil data JSON
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: response.message // ambil pesan dari controller
                     });
                 }
                 else {

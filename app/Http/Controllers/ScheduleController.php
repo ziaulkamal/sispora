@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ScheduleResource;
+use App\Models\AdditionalScheduleRegular;
+use App\Models\AdditionalScheduleSpecial;
 use App\Models\Schedule;
 use App\Models\Sport;
 use Illuminate\Http\Request;
@@ -12,7 +14,7 @@ class ScheduleController extends Controller
 {
     public function index()
     {
-        $schedules = Schedule::with(['sportsSub', 'venue'])
+        $schedules = Schedule::with(['sportsSub.sport', 'venue'])
             ->latest()
             ->get();
 
@@ -21,11 +23,16 @@ class ScheduleController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
         $sportsId = $request->input('mainSport');
         $matchedType = $request->input('match_type');
-        // dd($matchedType);
         $sportsValidation = Sport::findOrFail($sportsId);
+        $schedulesValidation = Schedule::query()
+            ->where('sportsSubId', $request->input('sportsSubId'))
+            ->where('venuesId', $request->input('venuesId'))
+            ->where('date', $request->input('date'))
+            ->where('start_time', '=', $request->input('start_time'))
+            ->where('end_time', '=', $request->input('end_time'));
+
         $validator = Validator::make($request->all(), [
             'date'          => 'required|date',
             'start_time'    => 'required|date_format:H:i:s',
@@ -57,17 +64,38 @@ class ScheduleController extends Controller
             ], 422);
         }
 
+        if ($schedulesValidation->exists()) {
+            return response()->json([
+                'message' => 'Jadwal ini sudah ada pada tanggal, waktu, dan venue yang sama.'
+            ], 423);
+        }
 
         if ($sportsValidation->specialCase === 'yes') {
             if ($matchedType !== 'headtohead') {
-                return response()->json([], 423);
+                return response()->json([
+                    'message' => 'Kondisi untuk pertandingan Bola harus ada 2 kontingen yang dipertandingkan dan harus Head To Head.'
+                ], 424);
             }
         }
-        // dd('lewat');
+
         $schedule = Schedule::create($validator->validated());
         if ($matchedType === 'headtohead') {
-            dd($schedule->id);
-            # code... PR BELUM SELESAI
+            for ($i=0; $i < collect($request->input('kontingens'))->count() ; $i++) {
+                $data = [
+                    'schedulesId' => $schedule->id,
+                    'match' => 'qualified',
+                    'kontingenId' => $request->input('kontingens')[$i],
+                ];
+                AdditionalScheduleSpecial::create($data);
+            }
+        }else {
+            for ($i = 0; $i < collect($request->input('kontingens'))->count(); $i++) {
+                $data = [
+                    'schedulesId' => $schedule->id,
+                    'kontingenId' => $request->input('kontingens')[$i],
+                ];
+                AdditionalScheduleRegular::create($data);
+            }
         }
 
         return new ScheduleResource($schedule->load(['sportsSub', 'venue']));

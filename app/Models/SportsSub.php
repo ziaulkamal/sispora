@@ -38,15 +38,4 @@ class SportsSub extends Model
         return $this->belongsTo(Sport::class, 'sportId', 'id');
     }
 
-    public function additionalPlayer()
-    {
-        return $this->belongsTo(AdditionalPlayer::class, 'add_player_id');
-    }
-
-    public function additionalMatch()
-    {
-        return $this->belongsTo(AdditionalMatch::class, 'add_match_id');
-    }
-
-
 }
